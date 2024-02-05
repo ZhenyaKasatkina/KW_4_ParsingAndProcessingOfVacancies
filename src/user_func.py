@@ -11,7 +11,6 @@ def check_range_and_num(name_user, range_from: int, range_to: int):
         number = input("Введи номер(число) своего выбора:  ")
         if not number.isdigit():
             print(f"Должно быть число. {name_user}, попробуй еще раз")
-
         elif int(number) < range_from or int(number) > range_to:
             print(f"Такого числа в диапазоне нет. {name_user}, попробуй еще раз")
         else:
@@ -28,7 +27,6 @@ def choose_job_site(site, vacancy):
         hh_api = HeadHunterAPI(vacancy)
         return hh_api.get_vacancies()
     else:
-
         sj_api = SuperJobAPI(vacancy)
         hh_api = HeadHunterAPI(vacancy)
         return hh_api.get_vacancies() + sj_api.get_vacancies()
@@ -54,7 +52,46 @@ def work_with_the_user():
     json_file_vacancy.save_to_file()
     # json_file_vacancy.read_data_from_file()
 
-if __name__ == "__main__":
-    work_with_the_user()
-
-
+    while True:
+        print("\nПредлагаю несколько вариантов фильтра:\n"
+              "1. ТОП вакансий по заработной плате\n"
+              "2. выбрать все объявления с установленной тобой минимальной заработной платой\n"
+              "3. найти все вакансии с ключевым словом в описании\n"
+              "4. выбрать все объявления в определенном городе\n"
+              "Либо просто выйти из программы нажав цифру 5.")
+        salary_choice = ["1. ТОП вакансий по заработной плате",
+                         "2. выбрать все объявления с установленной минимальной заработной платой",
+                         "3. вакансии с ключевым словом в описании",
+                         "4. выбрать все объявления в определенном городе",
+                         "5. выйти из программы"]
+        number_choice = int(check_range_and_num(name_user, 1, 5))
+        print(f"\nОтлично! {name_user}, твой выбор {salary_choice[int(number_choice) - 1]}")
+        if number_choice == 1:
+            quantity_top_vacancies = int(input("Введите количество(число) вакансий для вывода в топ: "))
+            json_file_vacancy.filter_data = json_file_vacancy.get_top_by_salary(quantity_top_vacancies)
+        elif number_choice == 2:
+            user_salary_size_from = int(input("Введите размер желаемой заработной платы: от "))
+            user_salary_size_to = int(input("до "))
+            json_file_vacancy.filter_data = json_file_vacancy.get_user_salary_ad(user_salary_size_from,
+                                                                                 user_salary_size_to)
+        elif number_choice == 3:
+            word_user = str(input("Введите ключевое слово для фильтрации: "))
+            json_file_vacancy.filter_data = json_file_vacancy.get_ad_by_keyword(word_user)
+        elif number_choice == 4:
+            town_user = str(input("Введите название города для фильтрации: ").capitalize())
+            json_file_vacancy.filter_data = json_file_vacancy.get_ad_by_name_town(town_user)
+        else:
+            print("Завершить программу и удалить все данные - нажми 0.\n"
+                  "Завершить программу и записать данные фильтрации в файл 'vacancies.json' - нажми 1")
+            completion_choice = ["Программа завершена, данные удалены",
+                                 "Программа завершена, данные записаны"]
+            number_choice = int(check_range_and_num(name_user, 0, 1))
+            print(f"\n{name_user}, {completion_choice[int(number_choice)]}")
+            if number_choice == 0:
+                json_file_vacancy.data = json_file_vacancy.filter_data
+                json_file_vacancy.del_data_in_file()
+                break
+            else:
+                json_file_vacancy.data = json_file_vacancy.filter_data
+                json_file_vacancy.save_to_file()
+                break
