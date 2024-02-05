@@ -1,5 +1,6 @@
 from src.job_site_api import HeadHunterAPI
 from src.job_site_api import SuperJobAPI
+from src.working_with_json_file import JSONFileVacancy
 
 
 def check_range_and_num(name_user, range_from: int, range_to: int):
@@ -45,6 +46,13 @@ def work_with_the_user():
     number_site = int(check_range_and_num(name_user, 1, 3))
     print(f"Отлично! {name_user}, твой выбор {site_choice[int(number_site) - 1]}")
 
+    print("\nШаг №2: выбираем вакансию (должность), какую ищешь")
+    name_vacancy = str((input())).lower()
+
+    all_vacancies = choose_job_site(number_site, name_vacancy)
+    json_file_vacancy = JSONFileVacancy(all_vacancies)
+    json_file_vacancy.save_to_file()
+    # json_file_vacancy.read_data_from_file()
 
 if __name__ == "__main__":
     work_with_the_user()
