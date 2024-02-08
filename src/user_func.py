@@ -1,6 +1,6 @@
 from src.job_site_api import HeadHunterAPI
 from src.job_site_api import SuperJobAPI
-from src.working_with_json_file import JSONFileVacancy
+from src.working_with_file_of_vacancies import JSONFileVacancy, CSVFileVacancy
 
 
 def check_range_and_num(name_user, range_from: int, range_to: int):
@@ -48,50 +48,88 @@ def work_with_the_user():
     name_vacancy = str((input())).lower()
 
     all_vacancies = choose_job_site(number_site, name_vacancy)
-    json_file_vacancy = JSONFileVacancy(all_vacancies)
-    json_file_vacancy.save_to_file()
-    # json_file_vacancy.read_data_from_file()
+    if not all_vacancies:
+        print("Нет вакансий, соответствующих заданным критериям.\n"
+              "Программа завершена")
+    else:
+        json_file_vacancy = JSONFileVacancy(all_vacancies)
+        csv_file_vacancy = CSVFileVacancy(all_vacancies)
+        json_file_vacancy.save_to_file()
+        csv_file_vacancy.save_to_file()
 
-    while True:
-        print("\nПредлагаю несколько вариантов фильтра:\n"
-              "1. ТОП вакансий по заработной плате\n"
-              "2. выбрать все объявления с установленной тобой минимальной заработной платой\n"
-              "3. найти все вакансии с ключевым словом в описании\n"
-              "4. выбрать все объявления в определенном городе\n"
-              "Либо просто выйти из программы нажав цифру 5.")
-        salary_choice = ["1. ТОП вакансий по заработной плате",
-                         "2. выбрать все объявления с установленной минимальной заработной платой",
-                         "3. вакансии с ключевым словом в описании",
-                         "4. выбрать все объявления в определенном городе",
-                         "5. выйти из программы"]
-        number_choice = int(check_range_and_num(name_user, 1, 5))
-        print(f"\nОтлично! {name_user}, твой выбор {salary_choice[int(number_choice) - 1]}")
-        if number_choice == 1:
-            quantity_top_vacancies = int(input("Введите количество(число) вакансий для вывода в топ: "))
-            json_file_vacancy.filter_data = json_file_vacancy.get_top_by_salary(quantity_top_vacancies)
-        elif number_choice == 2:
-            user_salary_size_from = int(input("Введите размер желаемой заработной платы: от "))
-            user_salary_size_to = int(input("до "))
-            json_file_vacancy.filter_data = json_file_vacancy.get_user_salary_ad(user_salary_size_from,
-                                                                                 user_salary_size_to)
-        elif number_choice == 3:
-            word_user = str(input("Введите ключевое слово для фильтрации: "))
-            json_file_vacancy.filter_data = json_file_vacancy.get_ad_by_keyword(word_user)
-        elif number_choice == 4:
-            town_user = str(input("Введите название города для фильтрации: ").capitalize())
-            json_file_vacancy.filter_data = json_file_vacancy.get_ad_by_name_town(town_user)
-        else:
-            print("Завершить программу и удалить все данные - нажми 0.\n"
-                  "Завершить программу и записать данные фильтрации в файл 'vacancies.json' - нажми 1")
-            completion_choice = ["Программа завершена, данные удалены",
-                                 "Программа завершена, данные записаны"]
-            number_choice = int(check_range_and_num(name_user, 0, 1))
-            print(f"\n{name_user}, {completion_choice[int(number_choice)]}")
-            if number_choice == 0:
-                json_file_vacancy.data = json_file_vacancy.filter_data
-                json_file_vacancy.del_data_in_file()
-                break
+        while True:
+            print("\nПредлагаю несколько вариантов фильтра:\n"
+                  "1. ТОП вакансий по заработной плате\n"
+                  "2. выбрать все объявления с установленной тобой диапазоном заработной платы\n"
+                  "3. найти все вакансии с ключевым словом в описании\n"
+                  "4. выбрать все объявления в определенном городе\n"
+                  "Либо просто выйти из программы нажав цифру 5.")
+            salary_choice = ["1. ТОП вакансий по заработной плате",
+                             "2. выбрать все объявления с установленной минимальной заработной платой",
+                             "3. вакансии с ключевым словом в описании",
+                             "4. выбрать все объявления в определенном городе",
+                             "5. выйти из программы"]
+            number_choice = int(check_range_and_num(name_user, 1, 5))
+            print(f"\nОтлично! {name_user}, твой выбор {salary_choice[int(number_choice) - 1]}")
+            if number_choice == 1:
+                try:
+                    quantity_top_vacancies = int(input("Введите количество(число) вакансий для вывода в топ: "))
+                    json_file_vacancy.data = json_file_vacancy.get_top_by_salary(quantity_top_vacancies)
+                    csv_file_vacancy.data = csv_file_vacancy.get_top_by_salary(quantity_top_vacancies)
+                except ValueError:
+                    print("При указании количества ТОП вакансий, количество должно быть целым числом")
+                else:
+                    # print(json_file_vacancy)
+                    print(csv_file_vacancy)
+
+            elif number_choice == 2:
+                try:
+                    user_salary_size_from = int(input("Введите размер желаемой заработной платы: от "))
+                    user_salary_size_to = int(input("до "))
+                    json_file_vacancy.data = json_file_vacancy.get_user_salary_ad(user_salary_size_from,
+                                                                                  user_salary_size_to)
+                    csv_file_vacancy.data = csv_file_vacancy.get_user_salary_ad(user_salary_size_from,
+                                                                                user_salary_size_to)
+                    if not json_file_vacancy.data:
+                        print("Нет вакансий, соответствующих заданным критериям")
+                    else:
+                        # print(json_file_vacancy)
+                        print(csv_file_vacancy)
+                except ValueError:
+                    print("При указании диапазона заработной платы необходимо ввести целое число")
+
+            elif number_choice == 3:
+                word_user = str(input("Введите ключевое слово для фильтрации: "))
+                json_file_vacancy.data = json_file_vacancy.get_ad_by_keyword(word_user)
+                csv_file_vacancy.data = csv_file_vacancy.get_ad_by_keyword(word_user)
+                if not json_file_vacancy.data:
+                    print("Нет вакансий, соответствующих заданным критериям")
+                else:
+                    # print(json_file_vacancy)
+                    print(csv_file_vacancy)
+
+            elif number_choice == 4:
+                town_user = str(input("Введите название города для фильтрации: ").capitalize())
+                json_file_vacancy.data = json_file_vacancy.get_ad_by_name_town(town_user)
+                csv_file_vacancy.data = csv_file_vacancy.get_ad_by_name_town(town_user)
+                if not json_file_vacancy.data:
+                    print("Нет вакансий, соответствующих заданным критериям")
+                else:
+                    # print(json_file_vacancy)
+                    print(csv_file_vacancy)
+
             else:
-                json_file_vacancy.data = json_file_vacancy.filter_data
-                json_file_vacancy.save_to_file()
-                break
+                print("Завершить программу и удалить все данные - нажми 0.\n"
+                      "Завершить программу и записать данные фильтрации в файл 'vacancies.json(.csv)' - нажми 1")
+                completion_choice = ["Программа завершена, данные удалены",
+                                     "Программа завершена, данные записаны"]
+                number_choice = int(check_range_and_num(name_user, 0, 1))
+                print(f"\n{name_user}, {completion_choice[int(number_choice)]}")
+                if number_choice == 0:
+                    json_file_vacancy.del_data_in_file()
+                    csv_file_vacancy.del_data_in_file()
+                    break
+                else:
+                    json_file_vacancy.save_to_file()
+                    csv_file_vacancy.save_to_file()
+                    break

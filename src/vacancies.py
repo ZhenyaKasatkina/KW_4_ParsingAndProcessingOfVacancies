@@ -1,28 +1,24 @@
 
 class Vacancies:
 
-    def __init__(self, name: str, salary_from: int | None, salary_to: int | None,
+    def __init__(self, job_title: str, salary_from: int | None, salary_to: int | None,
                  town: str, employer: str, url: str, responsibilities: str) -> None:
 
-        self.__name = name
-        self.salary_from = self._is_valid_salary(salary_from)
-        self.salary_to = self._is_valid_salary(salary_to)
-        self.salary = self.compare_salary()
-        self.employer = self._is_valid_employer(employer)
-        self.town = self._is_valid_town(town)
-        self.url = self._is_valid_url(url)
+        self.job_title = job_title                              # должность
+        self.salary_from = self._is_valid_salary(salary_from)   # зарплата ОТ
+        self.salary_to = self._is_valid_salary(salary_to)       # зарплата ДО
+        self.salary = self.compare_salary()                     # максимальная ЗП из указанной в объявлении
+        self.employer = self._is_valid_employer(employer)       # работодатель
+        self.town = self._is_valid_town(town)                   # город
+        self.url = self._is_valid_url(url)                      # ссылка на объявление
         self.responsibilities = self._is_valid_responsibilities(responsibilities)     # обязанности/требования
-
-    @property
-    def name(self):
-        return self.__name
 
     @staticmethod
     def _is_valid_salary(salary):
         """Проверка заработной платы на предмет указания ее размера"""
         if not salary:
             salary = 0
-        return salary
+        return int(salary)
 
     @staticmethod
     def _is_valid_employer(employer):
@@ -63,17 +59,17 @@ class Vacancies:
             return self.salary_to
 
     def __ge__(self, other):
-        return (self.salary >= other.salary or
-                self.salary_from >= other.salary_from)
+        return (self.salary_from >= other.salary_from
+                or self.salary >= other.salary)
 
     def __le__(self, other):
         return self.salary_to <= other.salary_to
 
     def __str__(self):
-        return (f"{self.__name} {self.salary_from}-{self.salary_to}, {self.town}, "
+        return (f"{self.job_title} {self.salary_from}-{self.salary_to}, {self.town}, "
                 f"{self.employer}, {self.url}, {self.responsibilities}\n")
 
     def __repr__(self):
-        return (f"{self.__name} {self.salary_from}-{self.salary_to} ({self.salary}), "
+        return (f"{self.job_title} {self.salary_from}-{self.salary_to} ({self.salary}), "
                 f"{self.town}, {self.employer}, "
                 f"{self.url}, {self.responsibilities}\n")

@@ -13,7 +13,7 @@ SUPER_JOB_API_KEY = os.getenv("SUPER_JOB_API_KEY")
 class JobSiteAPI(ABC):
 
     def get_data(self):
-        """Возвращает объект для работы
+        """Получает данные по вакансиям
         с сайта по поиску работы через API"""
         pass
 
@@ -32,19 +32,17 @@ class HeadHunterAPI(JobSiteAPI):
 
     def get_data(self):
         """
-        Возвращает объект для работы с сайта HH через API (до 600 объявлений)
+        Получает данные по вакансиям
+        с сайта HH через API (до 600 объявлений)
         """
         count_page = 0
         list_vacancies = []
         while count_page < 6:
 
             params = {
-                # "found": 1,
                 "per_page": 100,
-                # "pages": 1,
                 "page": count_page,
                 "text": self.vacancy_name,
-                # "salary": "RUR",
                 "only_with_salary": "true",
                 "items": [{}]
             }
@@ -53,8 +51,6 @@ class HeadHunterAPI(JobSiteAPI):
             method_name = "vacancies"
             response = requests.get(f"{bases_url}{method_name}", params=params)
             # print(response.json(), len(response.json()), count_page)
-            # print(response.text)
-            # print(response.url)
             # print(response.status_code)
             if response.json():
                 list_vacancies.extend(response.json()["items"])
@@ -72,27 +68,20 @@ class HeadHunterAPI(JobSiteAPI):
         all_ad = self.get_data()
         for item in all_ad:
             if item["type"]["name"] == "Открытая" and item["salary"]["currency"] == "RUR":
-                ad = {"vacancy_name": item["name"],                 # Название вакансии
+                ad = {"job_title": item["name"],                 # Название вакансии
                       "salary_from": item["salary"]["from"],        # Зарплата От...
                       "salary_to": item["salary"]["to"],            # Зарплата До...
                       "employer": item["employer"]["name"],         # Работодатель
                       "town": item["area"]["name"],                 # Город
-                      "link_to_ad": item["alternate_url"],          # Ссылка на объявление
-                      "responsibility": f'{item["snippet"]["responsibility"]}, '
-                                        f'{item["snippet"]["requirement"]}',   # Обязанности, требования
+                      "url": item["alternate_url"],          # Ссылка на объявление
+                      "responsibilities": f'{item["snippet"]["responsibility"]}, '
+                                          f'{item["snippet"]["requirement"]}',   # Обязанности, требования
                       "job site": "Head Hunter"}                    # Сайт вакансий
-
-                # print(item['name'])
                 list_of_suitable_vacancies.append(ad)
-
         return list_of_suitable_vacancies
 
     def __str__(self):
         pass
-        # list_of_suitable_vacancies = self.get_vacancies()
-        # return (f"Получено {len(list_of_suitable_vacancies)} вакансий,"
-        #         f"вот их список: {list_of_suitable_vacancies}")
-        #  ПРОПИСАТЬ КЛЮЧ / ЗЗНАЧЕНИЕ
 
 
 class SuperJobAPI(JobSiteAPI):
@@ -102,7 +91,8 @@ class SuperJobAPI(JobSiteAPI):
 
     def get_data(self):
         """
-        Возвращает объект для работы с сайта SJ через API
+        Получает данные по вакансиям
+        с сайта SJ через API
         """
         count_page = 0
         list_vacancies = []
@@ -120,10 +110,7 @@ class SuperJobAPI(JobSiteAPI):
             headers = {"X-Api-App-Id": SUPER_JOB_API_KEY}
 
             response = requests.get(f"{bases_url}{version}/{method_name}/", params=params, headers=headers)
-
-            # print(count_page)  #response.json(), len(response.json()), count_page)
-            # print(response.text)
-            # print(response.url)
+            # print(response.json(), len(response.json()), count_page)
             # print(response.status_code)
 
             if count_page < 10:
@@ -142,18 +129,15 @@ class SuperJobAPI(JobSiteAPI):
         all_ad = self.get_data()
         for item in all_ad:
             if not item["is_archive"] and item["currency"] == "rub":
-                ad = {"vacancy_name": item["profession"],       # Название вакансии
+                ad = {"job_title": item["profession"],       # Название вакансии
                       "salary_from": item["payment_from"],      # Зарплата От...
                       "salary_to": item["payment_to"],          # Зарплата До...
                       "employer": item["firm_name"],            # Работодатель
                       "town": item["town"]["title"],            # Город
-                      "link_to_ad": item["link"],               # Ссылка на объявление
-                      "responsibility": item["candidat"],       # Обязанности, требования
+                      "url": item["link"],               # Ссылка на объявление
+                      "responsibilities": item["candidat"],       # Обязанности, требования
                       "job site": "Super Job"}                  # Сайт вакансий
-
-                # print(item["profession"])
                 list_of_suitable_vacancies.append(ad)
-
         return list_of_suitable_vacancies
 
     def __str__(self):
